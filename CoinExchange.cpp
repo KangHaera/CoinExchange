@@ -500,5 +500,5 @@ void UCoinExchange_Form::Recv_CoinExchange_Item()
 {
 	ServerSendType = EServerSendType::Recv;
 	RecvServerDataUpdateView();
-    ShowNotice(static_cast<int32>(ESysMsg::SysMsg_TradeComplete))
+    ShowNotice(static_cast<int32>(ESysMsg::SysMsg_TradeComplete));
 }
