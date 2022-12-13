@@ -126,7 +126,7 @@ void CoinExchange_Form::ChangeTab(const int32 InTabIndex)
     }
 
     ListView_CategoryTab->RegenerateAllEntries();
-	UpdateExchangeView();
+    UpdateExchangeView();
 }
 
 void CoinExchange_Form::UpdateExchangeView()
@@ -153,23 +153,23 @@ void CoinExchange_Form::UpdateExchangeView()
     //  가지고 있는 코인 세팅
     SetTargetCostInfo(CoinExchangeItemList[0].cost_item_idx);
 	
-	//	가지고 있는 아이템 카운트 세팅
-	UUser* User = UFunctionLibrary_System::GetUser(this);
-	if (User == nullptr && User->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
-		return;
-	}
+    //	가지고 있는 아이템 카운트 세팅
+    UUser* User = UFunctionLibrary_System::GetUser(this);
+    if (User == nullptr && User->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
+	return;
+    }
 
-	UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
-	if (Inven == nullptr && Inven->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
-		return;
-	}
+    UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
+    if (Inven == nullptr && Inven->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
+	return;
+    }
 
-	int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
-	SetTargetAmountText(TargetItemCount);
+    int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
+    SetTargetAmountText(TargetItemCount);
 
     if (ListView_CoinExchange == nullptr && ListView_CoinExchange->IsValidLowLevel() == false)
     {
@@ -236,7 +236,7 @@ void CoinExchange_Form::RecvServerDataUpdateView()
 {
     if (ItemList.Num() <= 0)
     {
-		UpdateExchangeView();
+	UpdateExchangeView();
         return;
     }
 
@@ -249,25 +249,25 @@ void CoinExchange_Form::RecvServerDataUpdateView()
         return;
     }
 
-	//	가지고 있는 아이템 카운트 세팅
-	UUser* User = UFunctionLibrary_System::GetUser(this);
-	if (User == nullptr && User->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
-		return;
-	}
+    //	가지고 있는 아이템 카운트 세팅
+    UUser* User = UFunctionLibrary_System::GetUser(this);
+    if (User == nullptr && User->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
+	return;
+    }
 
-	UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
-	if (Inven == nullptr && Inven->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
-		return;
-	}
+    UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
+    if (Inven == nullptr && Inven->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
+	return;
+    }
 
-	int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
-	SetTargetAmountText(TargetItemCount);
+    int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
+    SetTargetAmountText(TargetItemCount);
 
-	//	아이템 카운트 재세팅
+    //	아이템 카운트 재세팅
     int32 ChangeItemHaveCount = Inven->GetInventoryItemCountByDataID(MainData.item_idx);
     for (int i= 0; i < ItemList.Num(); ++i)
     {
@@ -307,33 +307,33 @@ void CoinExchange_Form::ShowNotice(const int32 InTableID)
 
 void CoinExchange_Form::SetNeedCost()
 {
-	if (Text_AllNeedCost == nullptr || Text_AllNeedCost->IsValidLowLevel() == false)
+    if (Text_AllNeedCost == nullptr || Text_AllNeedCost->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Text_AllNeedCost is nullptr"));
+	return;
+    }
+
+    int32 NeedCost = 0;
+    for (int i = 0; i < ItemList.Num(); ++i)
+    {
+	if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Text_AllNeedCost is nullptr"));
-		return;
+		continue;
 	}
 
-	int32 NeedCost = 0;
-	for (int i = 0; i < ItemList.Num(); ++i)
-	{
-		if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
-		{
-			continue;
-		}
+	NeedCost += ItemList[i]->GetNeedCostCount();
+    }
 
-		NeedCost += ItemList[i]->GetNeedCostCount();
-	}
-
-	Text_AllNeedCost->SetText(NeedCost == 0 ? TEXT() : FText::FromString(TEXT("-") + FText::AsNumber(NeedCost).ToString()));
+    Text_AllNeedCost->SetText(NeedCost == 0 ? TEXT() : FText::FromString(TEXT("-") + FText::AsNumber(NeedCost).ToString()));
 }
 
 void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
 {
-	if (Table == nullptr || Table->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
-		return;
-	}
+    if (Table == nullptr || Table->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
+	return;
+    
 
     FItemMain* CoinItemData = Table->GetItemMainDataByID(InItemTableID);
     if (CoinItemData == nullptr)
@@ -347,13 +347,13 @@ void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
         CoinItemData.icon_path.LoadSynchronous();
     }
 
-	if (Icon_TargetCoin == nullptr || Icon_TargetCoin->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Icon_TargetCoin is nullptr"));
-		return;
-	}
+    if (Icon_TargetCoin == nullptr || Icon_TargetCoin->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Icon_TargetCoin is nullptr"));
+	return;
+    }
 
-	Icon_TargetCoin->SetBrushResourceObject(CoinItemData.icon_path.Get());
+    Icon_TargetCoin->SetBrushResourceObject(CoinItemData.icon_path.Get());
 
     if (Text_TargetName == nullptr || Text_TargetName->IsValidLowLevel() == false)
     {
@@ -364,16 +364,16 @@ void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
     FText HaveText;
     Table->GetUIMSgStringDataAt(EUIMsg::UseAmount, HaveText);	//	사용
     HaveText = FText::FromString(TEXT(" ") + CoinItemData.name.ToString() + HaveText.ToString());
-	Text_TargetName->SetText(HaveText);
+    Text_TargetName->SetText(HaveText);
 }
 
 void CoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
 {
-	if (Text_TargetAmount  == nullptr || Text_TargetAmount ->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Text_TargetAmount  is nullptr"));
-		return;
-	}
+    if (Text_TargetAmount  == nullptr || Text_TargetAmount ->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("Text_TargetAmount  is nullptr"));
+	return;
+    }
 
     Text_TargetAmount->SetText(FText::AsNumber(InHaveAmount));
 }
@@ -397,44 +397,44 @@ void CoinExchange_Form::ClearItemListView()
 
 void CoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListItemBase* InItemBase)
 {
-	if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InItemBase is nullptr"));
-		return;
-	}
+    if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("InItemBase is nullptr"));
+	return;
+    }
 
-	UCoinExchange_Tab_ListItem* CastItem = Cast<UCoinExchange_Tab_ListItem>(InItemBase);
-	if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
-		return;
-	}
-
-	CastItem->SetOnTabClickEvent(UCoinExchange_Tab_ListItem::FOnClickTab::CreateUObject(this, &CoinExchange_Form::CallBack_ClickTab));
+    UCoinExchange_Tab_ListItem* CastItem = Cast<UCoinExchange_Tab_ListItem>(InItemBase);
+    if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
+	return;
+    }
+	
+    CastItem->SetOnTabClickEvent(UCoinExchange_Tab_ListItem::FOnClickTab::CreateUObject(this, &CoinExchange_Form::CallBack_ClickTab));
 }
 
 void CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange(UListItemBase* InItemBase)
 {
-	if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InItemBase is nullptr"));
-		return;
-	}
+    if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("InItemBase is nullptr"));
+	return;
+    }
 
-	UCoinExchange_Item_ListItem* CastItem = Cast<UCoinExchange_Item_ListItem>(InItemBase);
-	if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
-		return;
-	}
+    UCoinExchange_Item_ListItem* CastItem = Cast<UCoinExchange_Item_ListItem>(InItemBase);
+    if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
+    {
+	UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
+	return;
+    }
 
-	CastItem->SetOnClickBuy(UCoinExchange_Item_ListItem::FOnCLickBuyEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Exchange));
-	CastItem->SetUpdateEvent(UCoinExchange_Item_ListItem::FOnUpdateEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Update));
+    CastItem->SetOnClickBuy(UCoinExchange_Item_ListItem::FOnCLickBuyEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Exchange));
+    CastItem->SetUpdateEvent(UCoinExchange_Item_ListItem::FOnUpdateEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Update));
 }
 
 void UCoinExchange_Form::CallBack_Update()
 {
-	SetNeedCost();
+    SetNeedCost();
 }
 
 void CoinExchange_Form::OnClick_AllRefresh()
@@ -447,10 +447,10 @@ void CoinExchange_Form::OnClick_AllRefresh()
 
     for (int i = 0; i < ItemList.Num(); ++i)
     {
-		if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
-		{
-			continue;
-		}
+	if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
+	{
+		continue;
+	}
         ItemList[i]->SetCount(0);
     }
 
@@ -464,10 +464,10 @@ void UCoinExchange_Form::CallBack_ClickTab(const int32& InTabIndex)
 
 void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 InCount)
 {
-	if (ServerSendType == EServerSendType::Send)
-	{
-		return;
-	}
+    if (ServerSendType == EServerSendType::Send)
+    {
+  	return;
+    }
 
     if (InTableID == INDEX_NONE)
     {
@@ -475,7 +475,7 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
         return;
     }
 
-	SelectItemIndex = InTableID;
+    SelectItemIndex = InTableID;
 
     UShopRequester* Requester = UFunctionLibrary_Network::GetRequester<UShopRequester>();
     if (Requester == nullptr || Requester->IsValidLowLevel() == false)
@@ -485,7 +485,7 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
     }
 
     UUser* User = UFunctionLibrary_System::GetUser();
-     if (User == nullptr || User->IsValidLowLevel() == false)
+    if (User == nullptr || User->IsValidLowLevel() == false)
     {
         UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
         return;
@@ -493,12 +493,12 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
 
     Requester->Send_CoinExchangeItem(this, User->GetUserInfo(), User->GetRandKey(), InTableID, InCount);
 
-	ServerSendType = EServerSendType::Send;
+    ServerSendType = EServerSendType::Send;
 }
 
 void UCoinExchange_Form::Recv_CoinExchange_Item()
 {
-	ServerSendType = EServerSendType::Recv;
-	RecvServerDataUpdateView();
+    ServerSendType = EServerSendType::Recv;
+    RecvServerDataUpdateView();
     ShowNotice(static_cast<int32>(ESysMsg::SysMsg_TradeComplete));
 }
