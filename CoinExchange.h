@@ -47,38 +47,38 @@ private:
 #pragma endregion listview event
 
 #pragma region onclick event
-	UFUNCTION() void OnClick_AllRefresh();									//	초기화 버튼
+	UFUNCTION() void OnClick_AllRefresh();							//	초기화 버튼
 #pragma endregion onclick event
 
 #pragma region callback event
-	void CallBack_Update();												//	+, - 버튼 인풋
+	void CallBack_Update();									//	+, - 버튼 인풋
 	void CallBack_ClickTab(const int32& InTabIndex);					//	탭 변경 
-	void CallBack_Exchange(const int32 InTableID, const int32 InCount);	//	아이템 교환
+	void CallBack_Exchange(const int32 InTableID, const int32 InCount);			//	아이템 교환
 #pragma endregion callback event
 
 private:
 #pragma region bind widget
-	UTextBlock* Text_TargetName = nullptr;			// ex) 길드 주화 사용
-	UTextBlock* Text_TargetAmount = nullptr;		// 현재 가지고 있는 수
-	UTextBlock* Text_AllNeedCost = nullptr;			// - 3,000 전체 얼만큼 빠질지.
+	UTextBlock* Text_TargetName;			// ex) 길드 주화 사용
+	UTextBlock* Text_TargetAmount;			// 현재 가지고 있는 수
+	UTextBlock* Text_AllNeedCost;			// - 3,000 전체 얼만큼 빠질지.
 
-	UListView* ListView_CategoryTab = nullptr;
-	UListView* ListView_CoinExchange = nullptr;
+	UListView* ListView_CategoryTab;
+	UListView* ListView_CoinExchange;
 
-	UButton* Bt_AllRefresh = nullptr;
+	UButton* Bt_AllRefresh;
 
-	UImage* Icon_TargetCoin = nullptr;
+	UImage* Icon_TargetCoin;
 #pragma endregion bind widget
 
 #pragma region listview item data
-	UPROPERTY() TMap<int32, UCoinExchange_Tab_ListItem_ItemData*> m_TabList;
-	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> m_ItemList;
-	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> m_PoolList;
+	UPROPERTY() TMap<int32, UCoinExchange_Tab_ListItem_ItemData*> TabList;
+	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> ItemList;
+	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> PoolList;
 #pragma endregion listview item data
 
-	UTable* m_Table = nullptr;
-	EServerSendType m_ServerSendType;
+	UPROPERTY() UTable* Table = nullptr;
+	EServerSendType ServerSendType;
 
-	int32 m_SelectTabIndex = 0;
-	int32 m_SelectItemIndex = 0;
+	int32 SelectTabIndex;
+	int32 SelectItemIndex;
 }
