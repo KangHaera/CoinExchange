@@ -27,7 +27,7 @@
 
 void CoinExchange_Form::InitWidget()
 {
-    m_Table = FunctionLibrary_System::GetTable(this);
+    Table = FunctionLibrary_System::GetTable(this);
 
     UE_BIND_WIDGET(UListView, ListView_CategoryTab);
     UE_BIND_WIDGET(UListView, ListView_CoinExchange);
@@ -52,16 +52,16 @@ void CoinExchange_Form::InitWidget()
 
 void CoinExchange_Form::InitTab()
 {
-    if (m_Table == nullptr ||  m_Table->IsValidLowLevel() == false)
+    if (Table == nullptr ||  Table->IsValidLowLevel() == false)
     {
-        UE_LOG(LogTemp, Warning, TEXT("m_Table is nullptr"));
+        UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
         return;
     }
 
     TArray<FCoinExchangeCategory> CategoryDataList;
-    if (m_Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false)
+    if (Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false)
     {
-        UE_LOG(LogTemp, Warning, TEXT("m_Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false"));
+        UE_LOG(LogTemp, Warning, TEXT("Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false"));
         return;
     }
 
@@ -74,7 +74,7 @@ void CoinExchange_Form::InitTab()
     for (int i= 0; i < CategoryDataList.Num(); ++i)
     {
         UCoinExchange_Tab_ListItem_ItemData* CreateData = NewObject<UCoinExchange_Tab_ListItem_ItemData>(this);
-        FItemMain* CoinItemData = m_Table->GetItemMainDataByID(CategoryDataList[i].item_idx);
+        FItemMain* CoinItemData = Table->GetItemMainDataByID(CategoryDataList[i].item_idx);
         if (CoinItemData == nullptr)
         {
             continue;
@@ -89,7 +89,7 @@ void CoinExchange_Form::InitTab()
         CreateData->SetActive(false);
         CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab));
 
-        m_TabList.Emplace(CategoryData[i].coin_exchange_category, CreateData);
+        TabList.Emplace(CategoryData[i].coin_exchange_category, CreateData);
         ListView_CategoryTab->AddItem(CreateData);
     }
 
@@ -99,24 +99,24 @@ void CoinExchange_Form::InitTab()
 
 void CoinExchange_Form::ChangeTab(const int32 InTabIndex)
 {
-    if (m_SelectTabIndex == InTabIndex)
+    if (SelectTabIndex == InTabIndex)
     {
         //  같은 탭 예외처리
         return;
     }
 
     //  이전 탭 off
-    if (m_TabList.Contains(m_SelectTabIndex) == true)
+    if (TabList.Contains(SelectTabIndex) == true)
     {
-        m_TabList[m_SelectTabIndex]->IsActive = false;
+        TabList[SelectTabIndex]->IsActive = false;
     }
  
     //  탭 갱신
-    m_SelectTabIndex = InTabIndex;
+    SelectTabIndex = InTabIndex;
 
-    if (m_TabList.Contains(m_SelectTabIndex) == true)
+    if (TabList.Contains(SelectTabIndex) == true)
     {
-        m_TabList[m_SelectTabIndex]->IsActive = true;
+        TabList[SelectTabIndex]->IsActive = true;
     }
 
     if (ListView_CategoryTab == nullptr ||  ListView_CategoryTab->IsValidLowLevel() == false)
@@ -134,19 +134,19 @@ void CoinExchange_Form::UpdateExchangeView()
     //  이전 데이터 저장
     ClearItemListView();
 
-    if (m_Table == nullptr ||  m_Table->IsValidLowLevel() == false)
+    if (Table == nullptr || Table->IsValidLowLevel() == false)
     {
-        UE_LOG(LogTemp, Warning, TEXT("m_Table is nullptr"));
+        UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
         return;
     }
 
 	//	테이블 데이터 가져오기
-    TArray<CoinExchangeMain> CoinExchangeItemList;
-    if (m_Table->GetCoinExchangeMainDataListByCategoryID(m_SelectTabIndex, CoinExchangeItemList) == false)
+    TArray<FCoinExchangeMain> CoinExchangeItemList;
+    if (Table->GetCoinExchangeMainDataListByCategoryID(SelectTabIndex, CoinExchangeItemList) == false)
     {
         UE_LOG(LogTemp, Warning
-			, TEXT("m_Table->GetCoinExchangeMainDataListByCategoryID(m_SelectTabIndex, CoinExchangeItemList) == false. m_SelectTabIndex index is %d")
-			, m_SelectTabIndex);
+			, TEXT("Not Found FCoinExchangeMain Table Data.")
+			, SelectTabIndex);
         return;
     }
 
@@ -182,9 +182,9 @@ void CoinExchange_Form::UpdateExchangeView()
     {
         UCoinExchange_Item_ListItem_ItemData* CreateData = nullptr;
 
-        if (m_PoolItemList.Num() > 0)
+        if (PoolItemList.Num() > 0)
         {
-            CreateData = m_PoolItemList.Pop();
+            CreateData = PoolItemList.Pop();
         }
         else 
         {
@@ -197,7 +197,7 @@ void CoinExchange_Form::UpdateExchangeView()
             continue;
         }
 
-        FItemMain* CoinItemData = m_Table->GetItemMainDataByID(CoinExchangeItemList[i].item_idx);
+        FItemMain* CoinItemData = Table->GetItemMainDataByID(CoinExchangeItemList[i].item_idx);
         if (CoinItemData == nullptr)
         {
             continue;
@@ -208,7 +208,7 @@ void CoinExchange_Form::UpdateExchangeView()
             CoinItemData.icon_path.LoadSynchronous();
         }
 
-        FItemMain* ChangeItemData = m_Table->GetItemMainDataByID(CoinExchangeItemList[i].change_item_idx);
+        FItemMain* ChangeItemData = Table->GetItemMainDataByID(CoinExchangeItemList[i].change_item_idx);
         if (ChangeItemData == nullptr)
         {
             continue;
@@ -223,7 +223,7 @@ void CoinExchange_Form::UpdateExchangeView()
             , ChangeItemData.icon_path.Get(),  CoinExchangeItemList[i].change_count);
         CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
 
-        m_ItemList.Emplace(CreateData);
+        ItemList.Emplace(CreateData);
         ListView_CoinExchange->AddItem(CreateData);
     }
 
@@ -234,18 +234,18 @@ void CoinExchange_Form::UpdateExchangeView()
 
 void CoinExchange_Form::RecvServerDataUpdateView()
 {
-    if (m_ItemList.Num() <= 0)
+    if (ItemList.Num() <= 0)
     {
 		UpdateExchangeView();
         return;
     }
 
     FCoinExchangeMain MainData;
-    if (m_Table->GetCoinExchangeMainDataAt(m_ItemList[0]->GetTableID(), MainData) == false)
+    if (Table->GetCoinExchangeMainDataAt(ItemList[0]->GetTableID(), MainData) == false)
     {
         UE_LOG(LogTemp, Warning
-			, TEXT("m_Table->GetCoinExchangeMainDataAt(m_ItemList[0]->GetTableID(), MainData) == false. m_ItemList[0]->GetTableID() index is %d")
-			, m_ItemList[0]->GetTableID());
+			, TEXT("Not Found FCoinExchangeMain Table Data. ItemList[0]->GetTableID() index is [%d]")
+			, ItemList[0]->GetTableID());
         return;
     }
 
@@ -269,13 +269,13 @@ void CoinExchange_Form::RecvServerDataUpdateView()
 
 	//	아이템 카운트 재세팅
     int32 ChangeItemHaveCount = Inven->GetInventoryItemCountByDataID(MainData.item_idx);
-    for (int i= 0; i < m_ItemList.Num(); ++i)
+    for (int i= 0; i < ItemList.Num(); ++i)
     {
-        if (m_ItemList[i]->GetTableID() == m_SelectItemIndex)
+        if (ItemList[i]->GetTableID() == SelectItemIndex)
         {
-            m_ItemList[i]->SetCount(0);
-            m_ItemList[i]->SetChangeCoinHaveCount(ChangeItemHaveCount);
-			m_SelectItemIndex = 0;
+            ItemList[i]->SetCount(0);
+            ItemList[i]->SetChangeCoinHaveCount(ChangeItemHaveCount);
+			SelectItemIndex = 0;
             break;
         }
     }
@@ -314,14 +314,14 @@ void CoinExchange_Form::SetNeedCost()
 	}
 
 	int32 NeedCost = 0;
-	for (int i = 0; i < m_ItemList.Num(); ++i)
+	for (int i = 0; i < ItemList.Num(); ++i)
 	{
-		if (m_ItemList[i] == nullptr || m_ItemList[i]->IsValidLowLevel() == false)
+		if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
 		{
 			continue;
 		}
 
-		NeedCost += m_ItemList[i]->GetNeedCostCount();
+		NeedCost += ItemList[i]->GetNeedCostCount();
 	}
 
 	Text_AllNeedCost->SetText(NeedCost == 0 ? TEXT() : FText::FromString(TEXT("-") + FText::AsNumber(NeedCost).ToString()));
@@ -329,13 +329,13 @@ void CoinExchange_Form::SetNeedCost()
 
 void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
 {
-	if (m_Table == nullptr || m_Table->IsValidLowLevel() == false)
+	if (Table == nullptr || Table->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("m_Table is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
 		return;
 	}
 
-    FItemMain* CoinItemData = m_Table->GetItemMainDataByID(InItemTableID);
+    FItemMain* CoinItemData = Table->GetItemMainDataByID(InItemTableID);
     if (CoinItemData == nullptr)
     {
         UE_LOG(LogTemp, Warning, TEXT("CoinItemData is nullptr"));
@@ -362,7 +362,7 @@ void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
     }
 
     FText HaveText;
-    m_Table->GetUIMSgStringDataAt(EUIMsg::UseAmount, HaveText);	//	사용
+    Table->GetUIMSgStringDataAt(EUIMsg::UseAmount, HaveText);	//	사용
     HaveText = FText::FromString(TEXT(" ") + CoinItemData.name.ToString() + HaveText.ToString());
 	Text_TargetName->SetText(HaveText);
 }
@@ -388,10 +388,10 @@ void CoinExchange_Form::ClearItemListView()
 
     for (int i = 0; i < ListView_CoinExchange->GetNumItems(); ++i)
     {
-        m_PoolItemList.Emplace(Cast<UCoinExchange_Item_ListItem_ItemData>(ListView_CoinExchange->GetItemAt(i)));
+        PoolItemList.Emplace(Cast<UCoinExchange_Item_ListItem_ItemData>(ListView_CoinExchange->GetItemAt(i)));
     }
 
-    m_ItemList.Empty();
+    ItemList.Empty();
     ListView_CoinExchange->ClearListItems();
 }
 
@@ -445,13 +445,13 @@ void CoinExchange_Form::OnClick_AllRefresh()
         return;
     }
 
-    for (int i = 0; i < m_ItemList.Num(); ++i)
+    for (int i = 0; i < ItemList.Num(); ++i)
     {
-		if (m_ItemList[i] == nullptr || m_ItemList[i]->IsValidLowLevel() == false)
+		if (ItemList[i] == nullptr || ItemList[i]->IsValidLowLevel() == false)
 		{
 			continue;
 		}
-        m_ItemList[i]->SetCount(0);
+        ItemList[i]->SetCount(0);
     }
 
     ListView_CoinExchange->RegenerateAllEntries();
@@ -464,7 +464,7 @@ void UCoinExchange_Form::CallBack_ClickTab(const int32& InTabIndex)
 
 void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 InCount)
 {
-	if (m_ServerSendType == EServerSendType::Send)
+	if (ServerSendType == EServerSendType::Send)
 	{
 		return;
 	}
@@ -475,7 +475,7 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
         return;
     }
 
-	m_SelectItemIndex = InTableID;
+	SelectItemIndex = InTableID;
 
     UShopRequester* Requester = UFunctionLibrary_Network::GetRequester<UShopRequester>();
     if (Requester == nullptr || Requester->IsValidLowLevel() == false)
@@ -493,12 +493,12 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
 
     Requester->Send_CoinExchangeItem(this, User->GetUserInfo(), User->GetRandKey(), InTableID, InCount);
 
-	m_ServerSendType = EServerSendType::Send;
+	ServerSendType = EServerSendType::Send;
 }
 
 void UCoinExchange_Form::Recv_CoinExchange_Item()
 {
-	m_ServerSendType = EServerSendType::Recv;
+	ServerSendType = EServerSendType::Recv;
 	RecvServerDataUpdateView();
     ShowNotice(static_cast<int32>(ESysMsg::SysMsg_TradeComplete))
 }
