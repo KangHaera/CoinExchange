@@ -1,1 +1,1 @@
-# CoinExchange
+# Sample code
