@@ -33,6 +33,7 @@ private:
 	void ChangeTab(const int32 InTabIndex);
 	void UpdateExchangeView();
 	void AddCoinExchangeItem(const FCoinExchangeMain& InCoinExchangeItemData);
+	void AddCategoryItem(const FCoinExchangeCategory& InCategoiryData);
 	void RecvServerDataUpdateView();
 	void ShowNotice(const int32 InTableID);
 #pragma endregion main process
