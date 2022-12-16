@@ -25,7 +25,12 @@
 #include "UI/Form/CoinExchange/ListItem/CoinExchange_Item_ListItem.h"
 
 
-void CoinExchange_Form::InitWidget()
+UCoinExchange_Form::UCoinExchange_Form(const FObjectInitializer &ObjectInitializer)
+	: Super(ObjectInitializer), SelectTabIndex(0), SelectItemIndex(0), ServerSendType(EServerSendType::None)
+{
+}
+
+void UCoinExchange_Form::InitWidget()
 {
     Table = FunctionLibrary_System::GetTable(this);
 
@@ -50,7 +55,7 @@ void CoinExchange_Form::InitWidget()
     InitTab();
 }
 
-void CoinExchange_Form::InitTab()
+void UCoinExchange_Form::InitTab()
 {
     if (Table == nullptr ||  Table->IsValidLowLevel() == false)
     {
@@ -97,7 +102,7 @@ void CoinExchange_Form::InitTab()
     ListView_CategoryTab->RegenerateAllEntries();
 }
 
-void CoinExchange_Form::ChangeTab(const int32 InTabIndex)
+void UCoinExchange_Form::ChangeTab(const int32 InTabIndex)
 {
     if (SelectTabIndex == InTabIndex)
     {
@@ -129,7 +134,7 @@ void CoinExchange_Form::ChangeTab(const int32 InTabIndex)
     UpdateExchangeView();
 }
 
-void CoinExchange_Form::UpdateExchangeView()
+void UCoinExchange_Form::UpdateExchangeView()
 {
     //  이전 데이터 저장
     ClearItemListView();
@@ -232,7 +237,7 @@ void CoinExchange_Form::UpdateExchangeView()
     SetAllNeedCount();
 }
 
-void CoinExchange_Form::RecvServerDataUpdateView()
+void UCoinExchange_Form::RecvServerDataUpdateView()
 {
     if (ItemList.Num() <= 0)
     {
@@ -290,7 +295,7 @@ void CoinExchange_Form::RecvServerDataUpdateView()
     SetNeedCost();
 }
 
-void CoinExchange_Form::ShowNotice(const int32 InTableID)
+void UCoinExchange_Form::ShowNotice(const int32 InTableID)
 {
     if (Owner == nullptr && Owner->IsValidLowLevel() == false)
     {
@@ -305,7 +310,7 @@ void CoinExchange_Form::ShowNotice(const int32 InTableID)
     Ower->ShowNotice(ENoticeWidget::Notice_Larg, &Args);
 }
 
-void CoinExchange_Form::SetNeedCost()
+void UCoinExchange_Form::SetNeedCost()
 {
     if (Text_AllNeedCost == nullptr || Text_AllNeedCost->IsValidLowLevel() == false)
     {
@@ -327,7 +332,7 @@ void CoinExchange_Form::SetNeedCost()
     Text_AllNeedCost->SetText(NeedCost == 0 ? TEXT() : FText::FromString(TEXT("-") + FText::AsNumber(NeedCost).ToString()));
 }
 
-void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
+void UCoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
 {
     if (Table == nullptr || Table->IsValidLowLevel() == false)
     {
@@ -367,7 +372,7 @@ void CoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
     Text_TargetName->SetText(HaveText);
 }
 
-void CoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
+void UCoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
 {
     if (Text_TargetAmount  == nullptr || Text_TargetAmount ->IsValidLowLevel() == false)
     {
@@ -378,7 +383,7 @@ void CoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
     Text_TargetAmount->SetText(FText::AsNumber(InHaveAmount));
 }
 
-void CoinExchange_Form::ClearItemListView()
+void UCoinExchange_Form::ClearItemListView()
 {
     if (ListView_CoinExchange == nullptr || ListView_CoinExchange->IsValidLowLevel() == false)
     {
@@ -395,7 +400,7 @@ void CoinExchange_Form::ClearItemListView()
     ListView_CoinExchange->ClearListItems();
 }
 
-void CoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListItemBase* InItemBase)
+void UCoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListItemBase* InItemBase)
 {
     if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
     {
@@ -413,7 +418,7 @@ void CoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListItem
     CastItem->SetOnTabClickEvent(UCoinExchange_Tab_ListItem::FOnClickTab::CreateUObject(this, &CoinExchange_Form::CallBack_ClickTab));
 }
 
-void CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange(UListItemBase* InItemBase)
+void UCoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange(UListItemBase* InItemBase)
 {
     if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
     {
@@ -437,7 +442,7 @@ void UCoinExchange_Form::CallBack_Update()
     SetNeedCost();
 }
 
-void CoinExchange_Form::OnClick_AllRefresh()
+void UCoinExchange_Form::OnClick_AllRefresh()
 {
     if (ListView_CoinExchange == nullptr || ListView_CoinExchange->IsValidLowLevel() == false)
     {
