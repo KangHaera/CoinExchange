@@ -77,7 +77,7 @@ private:
 	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> PoolList;
 #pragma endregion listview item data
 
-	UPROPERTY() UTable* Table = nullptr;
+	UPROPERTY() UTable* Table;
 	EServerSendType ServerSendType;
 
 	int32 SelectTabIndex;
