@@ -66,7 +66,7 @@ void UCoinExchange_Form::InitTab()
 	TArray<FCoinExchangeCategory> CategoryDataList;
 	if (Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false"));
+		UE_LOG(LogTemp, Warning, TEXT("FCoinExchangeCategory data is empty."));
 		return;
 	}
 
@@ -78,27 +78,10 @@ void UCoinExchange_Form::InitTab()
 
 	for (int i = 0; i < CategoryDataList.Num(); ++i)
 	{
-		UCoinExchange_Tab_ListItem_ItemData* CreateData = NewObject<UCoinExchange_Tab_ListItem_ItemData>(this);
-		FItemMain* CoinItemData = Table->GetItemMainDataByID(CategoryDataList[i].item_idx);
-		if (CoinItemData == nullptr)
-		{
-			continue;
-		}
-
-		if (CoinItemData.icon_path.Get() == nullptr)
-		{
-			CoinItemData.icon_path.LoadSynchronous();
-		}
-
-		CreateData->SetData(IconCode.icon_path.Get(), CoinData->name.ToString(), CategoryData[i].coin_exchange_category);
-		CreateData->SetActive(false);
-		CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab));
-
-		TabList.Emplace(CategoryData[i].coin_exchange_category, CreateData);
-		ListView_CategoryTab->AddItem(CreateData);
+		AddCategoryItem(CategoryDataList[i]);
 	}
 
-	ChangeTab(CategoryData[0].coin_exchange_category);
+	ChangeTab(CategoryDataList[0].coin_exchange_category);
 	ListView_CategoryTab->RegenerateAllEntries();
 }
 
@@ -236,10 +219,32 @@ void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExch
 
 	CreateData.SetData(InCoinExchangeItemData.coin_exchange_idx, CoinItemData.icon_path.Get(), InCoinExchangeItemData.cost_count
 		, ChangeItemData.icon_path.Get(), InCoinExchangeItemData.change_count);
-	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
+	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
 
 	ItemList.Emplace(CreateData);
 	ListView_CoinExchange->AddItem(CreateData);
+}
+
+void UCoinExchange_Form::AddCategoryItem(const FCoinExchangeCategory& InCategoiryData)
+{
+	UCoinExchange_Tab_ListItem_ItemData* CreateData = NewObject<UCoinExchange_Tab_ListItem_ItemData>(this);
+	FItemMain* CoinItemData = Table->GetItemMainDataByID(InCategoiryData.item_idx);
+	if (CoinItemData == nullptr)
+	{
+		continue;
+	}
+
+	if (CoinItemData.icon_path.Get() == nullptr)
+	{
+		CoinItemData.icon_path.LoadSynchronous();
+	}
+
+	CreateData->SetData(CoinItemData.icon_path.Get(), CoinItemData->name.ToString(), InCategoiryData.coin_exchange_category);
+	CreateData->SetActive(false);
+	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab));
+
+	TabList.Emplace(InCategoiryData.coin_exchange_category, CreateData);
+	ListView_CategoryTab->AddItem(CreateData);
 }
 
 void UCoinExchange_Form::RecvServerDataUpdateView()
