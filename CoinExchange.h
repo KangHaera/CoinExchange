@@ -21,6 +21,7 @@ Class ProjectAPI UCoinExchange_Form : public UFormBase
 GENERATED_BODY()
 
 public:
+	UCoinExchange_Form(const FObjectInitializer &ObjectInitializer);
 	virtual void InitWidget();
 
 private:
