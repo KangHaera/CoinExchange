@@ -136,105 +136,110 @@ void UCoinExchange_Form::ChangeTab(const int32 InTabIndex)
 
 void UCoinExchange_Form::UpdateExchangeView()
 {
-    //  이전 데이터 저장
-    ClearItemListView();
+	//  이전 데이터 저장
+	ClearItemListView();
 
-    if (Table == nullptr || Table->IsValidLowLevel() == false)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
-        return;
-    }
+	if (Table == nullptr || Table->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Table is nullptr"));
+		return;
+	}
 
 	//	테이블 데이터 가져오기
-    TArray<FCoinExchangeMain> CoinExchangeItemList;
-    if (Table->GetCoinExchangeMainDataListByCategoryID(SelectTabIndex, CoinExchangeItemList) == false)
-    {
-        UE_LOG(LogTemp, Warning
+	TArray<FCoinExchangeMain> CoinExchangeItemList;
+	if (Table->GetCoinExchangeMainDataListByCategoryID(SelectTabIndex, CoinExchangeItemList) == false)
+	{
+		UE_LOG(LogTemp, Warning
 			, TEXT("Not Found FCoinExchangeMain Table Data.")
 			, SelectTabIndex);
-        return;
-    }
+		return;
+	}
 
-    //  가지고 있는 코인 세팅
-    SetTargetCostInfo(CoinExchangeItemList[0].cost_item_idx);
-	
-    //	가지고 있는 아이템 카운트 세팅
-    UUser* User = UFunctionLibrary_System::GetUser(this);
-    if (User == nullptr && User->IsValidLowLevel() == false)
-    {
-	UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
-	return;
-    }
+	//  가지고 있는 코인 세팅
+	SetTargetCostInfo(CoinExchangeItemList[0].cost_item_idx);
 
-    UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
-    if (Inven == nullptr && Inven->IsValidLowLevel() == false)
-    {
-	UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
-	return;
-    }
+	//	가지고 있는 아이템 카운트 세팅
+	UUser* User = UFunctionLibrary_System::GetUser(this);
+	if (User == nullptr && User->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("User is nullptr"));
+		return;
+	}
 
-    int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
-    SetTargetAmountText(TargetItemCount);
+	UItemInventory* Inven = User->GetInventoryByInvenType<UItemInventory>(EInvenType::Item);
+	if (Inven == nullptr && Inven->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Inven is nullptr"));
+		return;
+	}
 
-    if (ListView_CoinExchange == nullptr && ListView_CoinExchange->IsValidLowLevel() == false)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("mListView_CoinExchange is nullptr"));
-        return;
-    }
+	int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
+	SetTargetAmountText(TargetItemCount);
+
+	if (ListView_CoinExchange == nullptr && ListView_CoinExchange->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("mListView_CoinExchange is nullptr"));
+		return;
+	}
 
 	//	테이블 데이터만큼 위젯 생성
-    for (int i = 0; i < CoinExchangeItemList.Num(); ++i)
-    {
-        UCoinExchange_Item_ListItem_ItemData* CreateData = nullptr;
+	for (int i = 0; i < CoinExchangeItemList.Num(); ++i)
+	{
+		AddCoinExchangeItem(CoinExchangeItemList[i]);
+	}
 
-        if (PoolItemList.Num() > 0)
-        {
-            CreateData = PoolItemList.Pop();
-        }
-        else 
-        {
-            CreateData = NewObject<UCoinExchange_Item_ListItem_ItemData>(this);
-        }
+	ListView_CoinExchange->RegenerateAllEntries();
 
-        if (CreateData == nullptr && CreateData->IsValidLowLevel() == false)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("CreateData is nullptr"));
-            continue;
-        }
+	SetAllNeedCount();
+}
 
-        FItemMain* CoinItemData = Table->GetItemMainDataByID(CoinExchangeItemList[i].item_idx);
-        if (CoinItemData == nullptr)
-        {
-            continue;
-        }
+void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExchangeItemData)
+{
+	UCoinExchange_Item_ListItem_ItemData* CreateData = nullptr;
 
-        if (CoinItemData.icon_path.Get() == nullptr)
-        {
-            CoinItemData.icon_path.LoadSynchronous();
-        }
+	if (PoolItemList.Num() > 0)
+	{
+		CreateData = PoolItemList.Pop();
+	}
+	else
+	{
+		CreateData = NewObject<UCoinExchange_Item_ListItem_ItemData>(this);
+	}
 
-        FItemMain* ChangeItemData = Table->GetItemMainDataByID(CoinExchangeItemList[i].change_item_idx);
-        if (ChangeItemData == nullptr)
-        {
-            continue;
-        }
+	if (CreateData == nullptr && CreateData->IsValidLowLevel() == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CreateData is nullptr"));
+		continue;
+	}
 
-        if (ChangeItemData.icon_path.Get() == nullptr)
-        {
-            ChangeItemData.icon_path.LoadSynchronous();
-        }
+	FItemMain* CoinItemData = Table->GetItemMainDataByID(InCoinExchangeItemData.item_idx);
+	if (CoinItemData == nullptr)
+	{
+		continue;
+	}
 
-        CreateData.SetData(CoinExchangeItemList[i].coin_exchange_idx, CoinItemData.icon_path.Get(), CoinExchangeItemList[i].cost_count
-            , ChangeItemData.icon_path.Get(),  CoinExchangeItemList[i].change_count);
-        CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
+	if (CoinItemData.icon_path.Get() == nullptr)
+	{
+		CoinItemData.icon_path.LoadSynchronous();
+	}
 
-        ItemList.Emplace(CreateData);
-        ListView_CoinExchange->AddItem(CreateData);
-    }
+	FItemMain* ChangeItemData = Table->GetItemMainDataByID(InCoinExchangeItemData.change_item_idx);
+	if (ChangeItemData == nullptr)
+	{
+		continue;
+	}
 
-    ListView_CoinExchange->RegenerateAllEntries();
+	if (ChangeItemData.icon_path.Get() == nullptr)
+	{
+		ChangeItemData.icon_path.LoadSynchronous();
+	}
 
-    SetAllNeedCount();
+	CreateData.SetData(InCoinExchangeItemData.coin_exchange_idx, CoinItemData.icon_path.Get(), InCoinExchangeItemData.cost_count
+		, ChangeItemData.icon_path.Get(), InCoinExchangeItemData.change_count);
+	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &CoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
+
+	ItemList.Emplace(CreateData);
+	ListView_CoinExchange->AddItem(CreateData);
 }
 
 void UCoinExchange_Form::RecvServerDataUpdateView()
