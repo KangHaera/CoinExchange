@@ -1,4 +1,4 @@
-#include "CoinExchange_Form.h"
+#include "CoinShop_Manager.h"
 
 #include "Components/Image.h"
 #include "Components/Button.h"
@@ -7,11 +7,11 @@
 
 #include "Table/Table.h"
 #include "Table/ItemMain.h"
-#include "Table/CoinExchangeMain.h"
-#include "Table/CoinExchangeCategory.h"
+#include "Table/CoinShopMain.h"
+#include "Table/CoinShopCategory.h"
 
 #include "FunctionLibrary_System.h"
-#include "FunctionLibrary_Network.h"
+#include "FunctionLibrary_Server.h"
 
 #include "System/GameUISystem.h"
 
@@ -21,21 +21,21 @@
 
 #include "Network/Server/Requester/ShopRequester.h"
 
-#include "UI/Form/CoinExchange/ListItem/CoinExchange_Tab_ListItem.h"
-#include "UI/Form/CoinExchange/ListItem/CoinExchange_Item_ListItem.h"
+#include "UI/Contents/CoinShop/ListItem/CoinShop_Tab_ListItem.h"
+#include "UI/Contents/CoinShop/ListItem/CoinShop_Item_ListItem.h"
 
 
-UCoinExchange_Form::UCoinExchange_Form(const FObjectInitializer &ObjectInitializer)
+UCoinShop_Manager::UCoinShop_Manager(const FObjectInitializer &ObjectInitializer)
 	: Super(ObjectInitializer), SelectTabIndex(0), SelectItemIndex(0), ServerSendType(EServerSendType::None)
 {
 }
 
-void UCoinExchange_Form::InitWidget()
+void UCoinShop_Manager::InitWidget()
 {
 	Table = FunctionLibrary_System::GetTable(this);
 
 	UE_BIND_WIDGET(UListView, ListView_CategoryTab);
-	UE_BIND_WIDGET(UListView, ListView_CoinExchange);
+	UE_BIND_WIDGET(UListView, ListView_CoinShop);
 
 	UE_BIND_WIDGET(UImage, Icon_TargetCoin);
 
@@ -49,13 +49,12 @@ void UCoinExchange_Form::InitWidget()
 		UE_LOG(LogTemp, Warning, TEXT("Bt_AllRefresh is nullptr"));
 		return;
 	}
-	Bt_AllRefresh->OnClicked.AddUniqueDynamic(this, &CoinExchange_Form::OnClick_AllRefresh);
-
+	Bt_AllRefresh->OnClicked.AddUniqueDynamic(this, &CoinShop_Manager::OnClick_AllRefresh);
 
 	InitTab();
 }
 
-void UCoinExchange_Form::InitTab()
+void UCoinShop_Manager::InitTab()
 {
 	if (Table == nullptr || Table->IsValidLowLevel() == false)
 	{
@@ -63,10 +62,10 @@ void UCoinExchange_Form::InitTab()
 		return;
 	}
 
-	TArray<FCoinExchangeCategory> CategoryDataList;
-	if (Table->GetAllCoinExchangeCategoryData(CategoryDataList) == false)
+	TArray<FCoinShopCategory> CategoryDataList;
+	if (Table->GetAllCoinShopCategoryData(CategoryDataList) == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FCoinExchangeCategory data is empty."));
+		UE_LOG(LogTemp, Warning, TEXT("FCoinShopCategory data is empty."));
 		return;
 	}
 
@@ -81,11 +80,11 @@ void UCoinExchange_Form::InitTab()
 		AddCategoryItem(CategoryDataList[i]);
 	}
 
-	ChangeTab(CategoryDataList[0].coin_exchange_category);
+	ChangeTab(CategoryDataList[0].coin_shop_category);
 	ListView_CategoryTab->RegenerateAllEntries();
 }
 
-void UCoinExchange_Form::ChangeTab(const int32 InTabIndex)
+void UCoinShop_Manager::ChangeTab(const int32 InTabIndex)
 {
 	if (SelectTabIndex == InTabIndex)
 	{
@@ -114,10 +113,10 @@ void UCoinExchange_Form::ChangeTab(const int32 InTabIndex)
 	}
 
 	ListView_CategoryTab->RegenerateAllEntries();
-	UpdateExchangeView();
+	UpdateShopView();
 }
 
-void UCoinExchange_Form::UpdateExchangeView()
+void UCoinShop_Manager::UpdateShopView()
 {
 	//  이전 데이터 저장
 	ClearItemListView();
@@ -129,17 +128,17 @@ void UCoinExchange_Form::UpdateExchangeView()
 	}
 
 	//	테이블 데이터 가져오기
-	TArray<FCoinExchangeMain> CoinExchangeItemList;
-	if (Table->GetCoinExchangeMainDataListByCategoryID(SelectTabIndex, CoinExchangeItemList) == false)
+	TArray<FCoinShopMain> CoinShopItemList;
+	if (Table->GetCoinShopMainDataListByCategoryID(SelectTabIndex, CoinShopItemList) == false)
 	{
 		UE_LOG(LogTemp, Warning
-			, TEXT("Not Found FCoinExchangeMain Table Data.")
+			, TEXT("Not Found FCoinShopMain Table Data.")
 			, SelectTabIndex);
 		return;
 	}
 
 	//  가지고 있는 코인 세팅
-	SetTargetCostInfo(CoinExchangeItemList[0].cost_item_idx);
+	SetTargetCostInfo(CoinShopItemList[0].cost_item_idx);
 
 	//	가지고 있는 아이템 카운트 세팅
 	UUser* User = UFunctionLibrary_System::GetUser(this);
@@ -159,26 +158,26 @@ void UCoinExchange_Form::UpdateExchangeView()
 	int32 TargetItemCount = Inven->GetInventoryItemCountByDataID(MainData.cost_item_idx);
 	SetTargetAmountText(TargetItemCount);
 
-	if (ListView_CoinExchange == nullptr && ListView_CoinExchange->IsValidLowLevel() == false)
+	if (ListView_CoinShop == nullptr && ListView_CoinShop->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("mListView_CoinExchange is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("mListView_CoinShop is nullptr"));
 		return;
 	}
 
 	//	테이블 데이터만큼 위젯 생성
-	for (int i = 0; i < CoinExchangeItemList.Num(); ++i)
+	for (int i = 0; i < CoinShopItemList.Num(); ++i)
 	{
-		AddCoinExchangeItem(CoinExchangeItemList[i]);
+		AddCoinShopItem(CoinShopItemList[i]);
 	}
 
-	ListView_CoinExchange->RegenerateAllEntries();
+	ListView_CoinShop->RegenerateAllEntries();
 
 	SetAllNeedCount();
 }
 
-void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExchangeItemData)
+void UCoinShop_Manager::AddCoinShopItem(const FCoinShopMain& InCoinShopItemData)
 {
-	UCoinExchange_Item_ListItem_ItemData* CreateData = nullptr;
+	UCoinShop_Item_ListItem_ItemData* CreateData = nullptr;
 
 	if (PoolItemList.Num() > 0)
 	{
@@ -186,7 +185,7 @@ void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExch
 	}
 	else
 	{
-		CreateData = NewObject<UCoinExchange_Item_ListItem_ItemData>(this);
+		CreateData = NewObject<UCoinShop_Item_ListItem_ItemData>(this);
 	}
 
 	if (CreateData == nullptr && CreateData->IsValidLowLevel() == false)
@@ -195,7 +194,7 @@ void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExch
 		continue;
 	}
 
-	FItemMain* CoinItemData = Table->GetItemMainDataByID(InCoinExchangeItemData.item_idx);
+	FItemMain* CoinItemData = Table->GetItemMainDataByID(InCoinShopItemData.item_idx);
 	if (CoinItemData == nullptr)
 	{
 		continue;
@@ -206,7 +205,7 @@ void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExch
 		CoinItemData.icon_path.LoadSynchronous();
 	}
 
-	FItemMain* ChangeItemData = Table->GetItemMainDataByID(InCoinExchangeItemData.change_item_idx);
+	FItemMain* ChangeItemData = Table->GetItemMainDataByID(InCoinShopItemData.change_item_idx);
 	if (ChangeItemData == nullptr)
 	{
 		continue;
@@ -217,17 +216,17 @@ void UCoinExchange_Form::AddCoinExchangeItem(const FCoinExchangeMain& InCoinExch
 		ChangeItemData.icon_path.LoadSynchronous();
 	}
 
-	CreateData.SetData(InCoinExchangeItemData.coin_exchange_idx, CoinItemData.icon_path.Get(), InCoinExchangeItemData.cost_count
-		, ChangeItemData.icon_path.Get(), InCoinExchangeItemData.change_count);
-	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange));
+	CreateData.SetData(InCoinShopItemData.coin_shop_idx, CoinItemData.icon_path.Get(), InCoinShopItemData.cost_count
+		, ChangeItemData.icon_path.Get(), InCoinShopItemData.change_count);
+	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinShop_Manager::OnListItemObjectSetEvent_ListView_CoinShop));
 
 	ItemList.Emplace(CreateData);
-	ListView_CoinExchange->AddItem(CreateData);
+	ListView_CoinShop->AddItem(CreateData);
 }
 
-void UCoinExchange_Form::AddCategoryItem(const FCoinExchangeCategory& InCategoiryData)
+void UCoinShop_Manager::AddCategoryItem(const FCoinShopCategory& InCategoiryData)
 {
-	UCoinExchange_Tab_ListItem_ItemData* CreateData = NewObject<UCoinExchange_Tab_ListItem_ItemData>(this);
+	UCoinShop_Tab_ListItem_ItemData* CreateData = NewObject<UCoinShop_Tab_ListItem_ItemData>(this);
 	FItemMain* CoinItemData = Table->GetItemMainDataByID(InCategoiryData.item_idx);
 	if (CoinItemData == nullptr)
 	{
@@ -239,27 +238,27 @@ void UCoinExchange_Form::AddCategoryItem(const FCoinExchangeCategory& InCategoir
 		CoinItemData.icon_path.LoadSynchronous();
 	}
 
-	CreateData->SetData(CoinItemData.icon_path.Get(), CoinItemData->name.ToString(), InCategoiryData.coin_exchange_category);
+	CreateData->SetData(CoinItemData.icon_path.Get(), CoinItemData->name.ToString(), InCategoiryData.coin_shop_category);
 	CreateData->SetActive(false);
-	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab));
+	CreateData->SetOnDataEvent(UListItemBase::FOnSetDataBase::CreateUObejct(this, &UCoinShop_Manager::OnListItemObjectSet_Event_ListView_CategoryTab));
 
-	TabList.Emplace(InCategoiryData.coin_exchange_category, CreateData);
+	TabList.Emplace(InCategoiryData.coin_shop_category, CreateData);
 	ListView_CategoryTab->AddItem(CreateData);
 }
 
-void UCoinExchange_Form::RecvServerDataUpdateView()
+void UCoinShop_Manager::RecvServerDataUpdateView()
 {
 	if (ItemList.Num() <= 0)
 	{
-		UpdateExchangeView();
+		UpdateShopView();
 		return;
 	}
 
-	FCoinExchangeMain MainData;
-	if (Table->GetCoinExchangeMainDataAt(ItemList[0]->GetTableID(), MainData) == false)
+	FCoinShopMain MainData;
+	if (Table->GetCoinShopMainDataAt(ItemList[0]->GetTableID(), MainData) == false)
 	{
 		UE_LOG(LogTemp, Warning
-			, TEXT("Not Found FCoinExchangeMain Table Data. ItemList[0]->GetTableID() index is [%d]")
+			, TEXT("Not Found FCoinShopMain Table Data. ItemList[0]->GetTableID() index is [%d]")
 			, ItemList[0]->GetTableID());
 		return;
 	}
@@ -295,17 +294,17 @@ void UCoinExchange_Form::RecvServerDataUpdateView()
 		}
 	}
 
-	if (ListView_CoinExchange == nullptr && ListView_CoinExchange->IsValidLowLevel() == false)
+	if (ListView_CoinShop == nullptr && ListView_CoinShop->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("mListView_CoinExchange is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("mListView_CoinShop is nullptr"));
 		return;
 	}
-	ListView_CoinExchange->RegenerateAllEntries();
+	ListView_CoinShop->RegenerateAllEntries();
 
 	SetNeedCost();
 }
 
-void UCoinExchange_Form::ShowNotice(const int32 InTableID)
+void UCoinShop_Manager::ShowNotice(const int32 InTableID)
 {
 	if (Owner == nullptr && Owner->IsValidLowLevel() == false)
 	{
@@ -320,7 +319,7 @@ void UCoinExchange_Form::ShowNotice(const int32 InTableID)
 	Ower->ShowNotice(ENoticeWidget::Notice_Larg, &Args);
 }
 
-void UCoinExchange_Form::SetNeedCost()
+void UCoinShop_Manager::SetNeedCost()
 {
 	if (Text_AllNeedCost == nullptr || Text_AllNeedCost->IsValidLowLevel() == false)
 	{
@@ -342,7 +341,7 @@ void UCoinExchange_Form::SetNeedCost()
 	Text_AllNeedCost->SetText(NeedCost == 0 ? TEXT() : FText::FromString(TEXT("-") + FText::AsNumber(NeedCost).ToString()));
 }
 
-void UCoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
+void UCoinShop_Manager::SetTargetCostInfo(const int32 InItemTableID)
 {
 	if (Table == nullptr || Table->IsValidLowLevel() == false)
 	{
@@ -382,7 +381,7 @@ void UCoinExchange_Form::SetTargetCostInfo(const int32 InItemTableID)
 	Text_TargetName->SetText(HaveText);
 }
 
-void UCoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
+void UCoinShop_Manager::SetTargetAmountText(const int32 InHaveAmount)
 {
 	if (Text_TargetAmount == nullptr || Text_TargetAmount->IsValidLowLevel() == false)
 	{
@@ -393,24 +392,24 @@ void UCoinExchange_Form::SetTargetAmountText(const int32 InHaveAmount)
 	Text_TargetAmount->SetText(FText::AsNumber(InHaveAmount));
 }
 
-void UCoinExchange_Form::ClearItemListView()
+void UCoinShop_Manager::ClearItemListView()
 {
-	if (ListView_CoinExchange == nullptr || ListView_CoinExchange->IsValidLowLevel() == false)
+	if (ListView_CoinShop == nullptr || ListView_CoinShop->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ListView_CoinExchange is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("ListView_CoinShop is nullptr"));
 		return;
 	}
 
-	for (int i = 0; i < ListView_CoinExchange->GetNumItems(); ++i)
+	for (int i = 0; i < ListView_CoinShop->GetNumItems(); ++i)
 	{
-		PoolItemList.Emplace(Cast<UCoinExchange_Item_ListItem_ItemData>(ListView_CoinExchange->GetItemAt(i)));
+		PoolItemList.Emplace(Cast<UCoinShop_Item_ListItem_ItemData>(ListView_CoinShop->GetItemAt(i)));
 	}
 
 	ItemList.Empty();
-	ListView_CoinExchange->ClearListItems();
+	ListView_CoinShop->ClearListItems();
 }
 
-void UCoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListItemBase* InItemBase)
+void UCoinShop_Manager::OnListItemObjectSet_Event_ListView_CategoryTab(UListItemBase* InItemBase)
 {
 	if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
 	{
@@ -418,17 +417,17 @@ void UCoinExchange_Form::OnListItemObjectSet_Event_ListView_CategoryTab(UListIte
 		return;
 	}
 
-	UCoinExchange_Tab_ListItem* CastItem = Cast<UCoinExchange_Tab_ListItem>(InItemBase);
+	UCoinShop_Tab_ListItem* CastItem = Cast<UCoinShop_Tab_ListItem>(InItemBase);
 	if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
 		return;
 	}
 
-	CastItem->SetOnTabClickEvent(UCoinExchange_Tab_ListItem::FOnClickTab::CreateUObject(this, &CoinExchange_Form::CallBack_ClickTab));
+	CastItem->SetOnTabClickEvent(UCoinShop_Tab_ListItem::FOnClickTab::CreateUObject(this, &CoinShop_Manager::CallBack_ClickTab));
 }
 
-void UCoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange(UListItemBase* InItemBase)
+void UCoinShop_Manager::OnListItemObjectSetEvent_ListView_CoinShop(UListItemBase* InItemBase)
 {
 	if (InItemBase == nullptr || InItemBase->IsValidLowLevel() == false)
 	{
@@ -436,27 +435,27 @@ void UCoinExchange_Form::OnListItemObjectSetEvent_ListView_CoinExchange(UListIte
 		return;
 	}
 
-	UCoinExchange_Item_ListItem* CastItem = Cast<UCoinExchange_Item_ListItem>(InItemBase);
+	UCoinShop_Item_ListItem* CastItem = Cast<UCoinShop_Item_ListItem>(InItemBase);
 	if (CastItem == nullptr || CastItem->IsValidLowLevel() == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CastItem is nullptr"));
 		return;
 	}
 
-	CastItem->SetOnClickBuy(UCoinExchange_Item_ListItem::FOnCLickBuyEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Exchange));
-	CastItem->SetUpdateEvent(UCoinExchange_Item_ListItem::FOnUpdateEvent::CreateUObject(this, &CoinExchange_Form::CallBack_Update));
+	CastItem->SetOnClickBuy(UCoinShop_Item_ListItem::FOnCLickBuyEvent::CreateUObject(this, &CoinShop_Manager::CallBack_Buy));
+	CastItem->SetUpdateEvent(UCoinShop_Item_ListItem::FOnUpdateEvent::CreateUObject(this, &CoinShop_Manager::CallBack_Update));
 }
 
-void UCoinExchange_Form::CallBack_Update()
+void UCoinShop_Manager::CallBack_Update()
 {
 	SetNeedCost();
 }
 
-void UCoinExchange_Form::OnClick_AllRefresh()
+void UCoinShop_Manager::OnClick_AllRefresh()
 {
-	if (ListView_CoinExchange == nullptr || ListView_CoinExchange->IsValidLowLevel() == false)
+	if (ListView_CoinShop == nullptr || ListView_CoinShop->IsValidLowLevel() == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ListView_CoinExchange is nullptr"));
+		UE_LOG(LogTemp, Warning, TEXT("ListView_CoinShop is nullptr"));
 		return;
 	}
 
@@ -469,15 +468,15 @@ void UCoinExchange_Form::OnClick_AllRefresh()
 		ItemList[i]->SetCount(0);
 	}
 
-	ListView_CoinExchange->RegenerateAllEntries();
+	ListView_CoinShop->RegenerateAllEntries();
 }
 
-void UCoinExchange_Form::CallBack_ClickTab(const int32& InTabIndex)
+void UCoinShop_Manager::CallBack_ClickTab(const int32& InTabIndex)
 {
 	ChangeTab(InTabIndex);
 }
 
-void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 InCount)
+void UCoinShop_Manager::CallBack_Buy(const int32 InTableID, const int32 InCount)
 {
 	if (ServerSendType == EServerSendType::Send)
 	{
@@ -486,13 +485,13 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
 
 	if (InTableID == INDEX_NONE)
 	{
-		ShowNotice(static_cast<int32>(InCount <= 0 ? ESysMsg::SysMsg_ExchangeReceiptInput : ESysMsg::SysMsg_ExchangeInsuffcient));
+		ShowNotice(static_cast<int32>(InCount <= 0 ? ESysMsg::SysMsg_ShopReceiptInput : ESysMsg::SysMsg_ShopInsuffcient));
 		return;
 	}
 
 	SelectItemIndex = InTableID;
 
-	UShopRequester* Requester = UFunctionLibrary_Network::GetRequester<UShopRequester>();
+	UShopRequester* Requester = UFunctionLibrary_Server::GetRequester<UShopRequester>();
 	if (Requester == nullptr || Requester->IsValidLowLevel() == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Requester is nullptr"));
@@ -506,12 +505,12 @@ void UCoinExchange_Form::CallBack_Exchange(const int32 InTableID, const int32 In
 		return;
 	}
 
-	Requester->Send_CoinExchangeItem(this, User->GetUserInfo(), User->GetRandKey(), InTableID, InCount);
+	Requester->Send_CoinShopItem(this, User->GetUserInfo(), User->GetRandKey(), InTableID, InCount);
 
 	ServerSendType = EServerSendType::Send;
 }
 
-void UCoinExchange_Form::Recv_CoinExchange_Item()
+void UCoinShop_Manager::Recv_CoinShop_Item()
 {
 	ServerSendType = EServerSendType::Recv;
 	RecvServerDataUpdateView();
