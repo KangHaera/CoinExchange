@@ -1,8 +1,8 @@
 #pragma once
 
 #include “CoreMinimal.h”
-#include “UI/Base/FormBase.h”
-#include “CoinExchange_Form.generated.h”
+#include “UI/Base/ManagerBase.h”
+#include “CoinShop_Manager.generated.h”
 
 class UButton;
 class UImage;
@@ -12,16 +12,16 @@ class UTextBlock;
 class Table;
 
 class UListItmeBase;
-class UCoinExchange_Tab_ListItem_ItemData;
-class UCoinExchange_Item_ListItem_ItemData;
+class UCoinShop_Tab_ListItem_ItemData;
+class UCoinShop_Item_ListItem_ItemData;
 
 UClass()
-Class ProjectAPI UCoinExchange_Form : public UFormBase
+Class ProjectAPI UCoinShop_Manager : public UManagerBase
 {
 GENERATED_BODY()
 
 public:
-	UCoinExchange_Form(const FObjectInitializer &ObjectInitializer);
+	UCoinShop_Manager();
 	virtual void InitWidget();
 
 private:
@@ -31,9 +31,9 @@ private:
 
 #pragma region main process
 	void ChangeTab(const int32 InTabIndex);
-	void UpdateExchangeView();
-	void AddCoinExchangeItem(const FCoinExchangeMain& InCoinExchangeItemData);
-	void AddCategoryItem(const FCoinExchangeCategory& InCategoiryData);
+	void UpdateShopView();
+	void AddCoinShopItem(const FCoinShopMain& InCoinShopItemData);
+	void AddCategoryItem(const FCoinShopCategory& InCategoiryData);
 	void RecvServerDataUpdateView();
 	void ShowNotice(const int32 InTableID);
 #pragma endregion main process
@@ -46,17 +46,17 @@ private:
 
 #pragma region listview event
 	UFUNCTION() void OnListItemObjectSet_Event_ListView_Tab(UListItemBase* InItemBase);
-	UFUNCTION() void OnListItemObjectSetEvent_ListView_Exchange(UListItemBase* InItemBase);
+	UFUNCTION() void OnListItemObjectSetEvent_ListView_Shop(UListItemBase* InItemBase);
 #pragma endregion listview event
 
 #pragma region onclick event
-	UFUNCTION() void OnClick_AllRefresh();							//	초기화 버튼
+	UFUNCTION() void OnClick_AllRefresh();									//	초기화 버튼
 #pragma endregion onclick event
 
 #pragma region callback event
-	void CallBack_Update();									//	+, - 버튼 인풋
-	void CallBack_ClickTab(const int32& InTabIndex);					//	탭 변경 
-	void CallBack_Exchange(const int32 InTableID, const int32 InCount);			//	아이템 교환
+	void CallBack_Update();							//	+, - 버튼 인풋
+	void CallBack_ClickTab(const int32& InTabIndex);			//	탭 변경 
+	void CallBack_Buy(const int32 InTableID, const int32 InCount);		//	아이템 교환
 #pragma endregion callback event
 
 private:
@@ -66,7 +66,7 @@ private:
 	UTextBlock* Text_AllNeedCost;			// - 3,000 전체 얼만큼 빠질지.
 
 	UListView* ListView_CategoryTab;
-	UListView* ListView_CoinExchange;
+	UListView* ListView_CoinShop;
 
 	UButton* Bt_AllRefresh;
 
@@ -74,12 +74,12 @@ private:
 #pragma endregion bind widget
 
 #pragma region listview item data
-	UPROPERTY() TMap<int32, UCoinExchange_Tab_ListItem_ItemData*> TabList;
-	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> ItemList;
-	UPROPERTY() TArray<UCoinExchange_Item_ListItem_ItemData*> PoolList;
+	UPROPERTY() TMap<int32, UCoinShop_Tab_ListItem_ItemData*> TabList;
+	UPROPERTY() TArray<UCoinShop_Item_ListItem_ItemData*> ItemList;
+	UPROPERTY() TArray<UCoinShop_Item_ListItem_ItemData*> PoolList;
 #pragma endregion listview item data
 
-	UPROPERTY() UTable* Table;
+	UPROPERTY() UTable* Table = nullptr;
 	EServerSendType ServerSendType;
 
 	int32 SelectTabIndex;
